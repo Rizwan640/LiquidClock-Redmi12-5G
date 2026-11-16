@@ -18,59 +18,101 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate theme XML and MAML essentials
+      - name: Validate theme XML and MAML structure
         run: |
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           from pathlib import Path
 
-          for file in (
-              Path("theme/description.xml"),
-              Path("theme/lockscreen/advance/manifest.xml"),
-          ):
+          description = Path("theme/description.xml")
+          manifest = Path("theme/lockscreen/advance/manifest.xml")
+
+          for file in (description, manifest):
               if not file.is_file():
                   raise SystemExit(f"Missing required file: {file}")
               ET.parse(file)
               print(f"XML OK: {file}")
 
-          root = ET.parse("theme/lockscreen/advance/manifest.xml").getroot()
+          root = ET.parse(manifest).getroot()
           if root.tag != "Lockscreen":
               raise SystemExit("MAML root element must be <Lockscreen>")
 
-          required = {"Wallpaper", "DateTime", "Unlocker"}
-          present = {element.tag for element in root.iter()}
-          missing = required - present
-          if missing:
-              raise SystemExit("Missing MAML elements: " + ", ".join(sorted(missing)))
+          if root.find("Wallpaper") is None:
+              raise SystemExit("System wallpaper element <Wallpaper/> is missing")
+
+          dates = root.findall("DateTime")
+          if len(dates) < 2:
+              raise SystemExit("Expected separate date and clock DateTime elements")
+          if not any(node.get("format") == "HH:mm" for node in dates):
+              raise SystemExit("24-hour clock DateTime format HH:mm is missing")
+
+          if len(root.findall("Rectangle")) < 2:
+              raise SystemExit("Liquid Glass panel and edge rectangles are required")
 
           unlocker = root.find("Unlocker")
-          if unlocker is None or unlocker.find("StartPoint") is None or unlocker.find("EndPoint") is None:
-              raise SystemExit("Unlocker must define StartPoint and EndPoint")
-          if unlocker.find("EndPoint/Path") is None:
-              raise SystemExit("Unlocker must define an unlock path")
+          if unlocker is None:
+              raise SystemExit("MAML <Unlocker> is missing")
 
-          print("MAML structural checks passed (not a device/runtime compatibility test).")
+          start = unlocker.find("StartPoint")
+          end = unlocker.find("EndPoint")
+          path = unlocker.find("EndPoint/Path")
+          if start is None or end is None or path is None:
+              raise SystemExit("Unlocker must contain StartPoint, EndPoint and Path")
+
+          expected_start = {"x": "0", "y": "0", "w": "1080", "h": "#screen_height"}
+          expected_end = {
+              "x": "0", "y": "-#screen_height",
+              "w": "1080", "h": "#screen_height-200"
+          }
+          for label, node, expected in (
+              ("StartPoint", start, expected_start),
+              ("EndPoint", end, expected_end),
+          ):
+              for key, value in expected.items():
+                  if node.get(key) != value:
+                      raise SystemExit(
+                          f"{label} {key} must be {value!r}; got {node.get(key)!r}"
+                      )
+
+          positions = path.findall("Position")
+          if len(positions) != 2:
+              raise SystemExit("Unlocker Path must contain the two documented endpoints")
+          if positions[0].get("x") != "0" or positions[0].get("y") != "0":
+              raise SystemExit("Unlocker Path must start at (0, 0)")
+          if positions[1].get("x") != "0" or positions[1].get("y") != "-#screen_height":
+              raise SystemExit("Unlocker Path must end at (0, -#screen_height)")
+
+          print("MAML structural checks passed; device compatibility is not tested.")
           PY
 
       - name: Package MTZ prototype
         run: |
           cd theme
-          zip -r ../LiquidClock-Redmi12-5G-prototype.mtz .
+          zip -r -X ../LiquidClock-Redmi12-5G-prototype.mtz .
 
       - name: Verify MTZ archive structure
         run: |
           python3 - <<'PY'
           from zipfile import ZipFile
+          from xml.etree import ElementTree as ET
+
           archive = "LiquidClock-Redmi12-5G-prototype.mtz"
+          required = {"description.xml", "lockscreen/advance/manifest.xml"}
+
           with ZipFile(archive) as z:
               names = set(z.namelist())
-              required = {"description.xml", "lockscreen/advance/manifest.xml"}
               missing = required - names
               if missing:
                   raise SystemExit("MTZ missing entries: " + ", ".join(sorted(missing)))
+
               bad = z.testzip()
               if bad:
                   raise SystemExit(f"Corrupt ZIP entry: {bad}")
+
+              for member in required:
+                  ET.fromstring(z.read(member))
+                  print(f"Packaged XML OK: {member}")
+
               print(f"MTZ archive OK: {len(names)} entries")
           PY
 
