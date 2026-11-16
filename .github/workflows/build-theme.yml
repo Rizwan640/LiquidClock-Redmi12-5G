@@ -1,0 +1,47 @@
+name: Build LiquidClock MTZ prototype
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "theme/**"
+      - ".github/workflows/build-theme.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate theme XML
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          for file in [
+              Path("theme/description.xml"),
+              Path("theme/lockscreen/advance/manifest.xml"),
+          ]:
+              if not file.is_file():
+                  raise SystemExit(f"Missing required file: {file}")
+              ET.parse(file)
+              print(f"XML OK: {file}")
+          PY
+
+      - name: Package MTZ prototype
+        run: |
+          cd theme
+          zip -r ../LiquidClock-Redmi12-5G-prototype.mtz .
+
+      - name: Upload MTZ artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiquidClock-Redmi12-5G-prototype
+          path: LiquidClock-Redmi12-5G-prototype.mtz
+          if-no-files-found: error
+          retention-days: 14
