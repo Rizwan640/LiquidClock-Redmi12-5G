@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lockscreen version="1" frameRate="30" screenWidth="1080" useHardwareCanvas="true">
+    <Wallpaper/>
+
+    <!-- Glass-like panel: translucent fills, gradients and highlights.
+         This is a visual simulation, not live background blur. -->
+    <Rectangle x="54" y="420" w="972" h="500"
+        cornerRadius="54"
+        fillColor="#2bffffff"
+        strokeColor="#70ffffff"
+        weight="3"
+        strokeAlign="center">
+        <FillShaders>
+            <LinearGradient x="0" y="0" x1="0" y1="500" tile="clamp">
+                <GradientStop color="#42ffffff" position="0"/>
+                <GradientStop color="#1affffff" position="0.48"/>
+                <GradientStop color="#12ffffff" position="1"/>
+            </LinearGradient>
+        </FillShaders>
+    </Rectangle>
+
+    <Rectangle x="72" y="438" w="936" h="464"
+        cornerRadius="42"
+        strokeColor="#36ffffff"
+        weight="2"
+        strokeAlign="inner"/>
+
+    <DateTime x="112" y="520" size="46"
+        color="#f5ffffff"
+        fontFamily="miui-regular"
+        formatExp="EEE, dd MMM"/>
+
+    <DateTime x="112" y="700" size="174"
+        color="#ffffffff"
+        fontFamily="miui-light"
+        format="HH:mm"/>
+
+    <Rectangle x="112" y="455" w="260" h="4"
+        cornerRadius="2"
+        fillColor="#88ffffff"/>
+
+    <Text x="112" y="835" size="34"
+        color="#d9ffffff"
+        text="Liquid Glass"/>
+</Lockscreen>
