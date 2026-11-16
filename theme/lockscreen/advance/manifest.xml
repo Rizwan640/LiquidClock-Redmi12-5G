@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Lockscreen version="1" frameRate="30" screenWidth="1080" useHardwareCanvas="true">
-    <Wallpaper/>
+<Lockscreen version="1" frameRate="30" useVariableUpdater="DateTime.Minute" screenWidth="1080" useHardwareCanvas="true">
+    <!-- Keep the system wallpaper instead of bundling a replacement image. -->
+    <Wallpaper />
 
-    <!-- Glass-like panel: translucent fills, gradients and highlights.
-         This is a visual simulation, not live background blur. -->
+    <!-- Liquid Glass-inspired panel: translucent fill + highlights.
+         This is a visual approximation, not live wallpaper blur. -->
     <Rectangle x="54" y="420" w="972" h="500"
         cornerRadius="54"
         fillColor="#2bffffff"
@@ -12,34 +13,50 @@
         strokeAlign="center">
         <FillShaders>
             <LinearGradient x="0" y="0" x1="0" y1="500" tile="clamp">
-                <GradientStop color="#42ffffff" position="0"/>
-                <GradientStop color="#1affffff" position="0.48"/>
-                <GradientStop color="#12ffffff" position="1"/>
+                <GradientStop color="#42ffffff" position="0" />
+                <GradientStop color="#1affffff" position="0.48" />
+                <GradientStop color="#12ffffff" position="1" />
             </LinearGradient>
         </FillShaders>
     </Rectangle>
 
+    <!-- Inner glass edge -->
     <Rectangle x="72" y="438" w="936" h="464"
         cornerRadius="42"
+        fillColor="#00ffffff"
         strokeColor="#36ffffff"
         weight="2"
-        strokeAlign="inner"/>
+        strokeAlign="inner" />
 
     <DateTime x="112" y="520" size="46"
         color="#f5ffffff"
         fontFamily="miui-regular"
-        formatExp="EEE, dd MMM"/>
+        format="EEE, dd MMM" />
 
     <DateTime x="112" y="700" size="174"
         color="#ffffffff"
         fontFamily="miui-light"
-        format="HH:mm"/>
+        format="HH:mm" />
 
+    <!-- Top reflection -->
     <Rectangle x="112" y="455" w="260" h="4"
         cornerRadius="2"
-        fillColor="#88ffffff"/>
+        fillColor="#88ffffff" />
 
-    <Text x="112" y="835" size="34"
+    <Text x="540" y="#screen_height-80"
+        align="center"
         color="#d9ffffff"
-        text="Liquid Glass"/>
+        size="30"
+        text="Swipe up to unlock" />
+
+    <!-- Xiaomi MAML slide-up unlock gesture, based on Xiaomi Theme Designer guide. -->
+    <Unlocker name="unlocker" bounceInitSpeed="1500" bounceAcceleration="3000">
+        <StartPoint x="390" y="#screen_height-200" w="300" h="200" />
+        <EndPoint x="390" y="#screen_height-600" w="300" h="100">
+            <Path x="0" y="0" tolerance="800">
+                <Position x="390" y="#screen_height-200" />
+                <Position x="390" y="#screen_height-500" />
+            </Path>
+        </EndPoint>
+    </Unlocker>
 </Lockscreen>
