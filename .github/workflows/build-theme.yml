@@ -18,25 +18,61 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate theme XML
+      - name: Validate theme XML and MAML essentials
         run: |
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           from pathlib import Path
-          for file in [
+
+          for file in (
               Path("theme/description.xml"),
               Path("theme/lockscreen/advance/manifest.xml"),
-          ]:
+          ):
               if not file.is_file():
                   raise SystemExit(f"Missing required file: {file}")
               ET.parse(file)
               print(f"XML OK: {file}")
+
+          root = ET.parse("theme/lockscreen/advance/manifest.xml").getroot()
+          if root.tag != "Lockscreen":
+              raise SystemExit("MAML root element must be <Lockscreen>")
+
+          required = {"Wallpaper", "DateTime", "Unlocker"}
+          present = {element.tag for element in root.iter()}
+          missing = required - present
+          if missing:
+              raise SystemExit("Missing MAML elements: " + ", ".join(sorted(missing)))
+
+          unlocker = root.find("Unlocker")
+          if unlocker is None or unlocker.find("StartPoint") is None or unlocker.find("EndPoint") is None:
+              raise SystemExit("Unlocker must define StartPoint and EndPoint")
+          if unlocker.find("EndPoint/Path") is None:
+              raise SystemExit("Unlocker must define an unlock path")
+
+          print("MAML structural checks passed (not a device/runtime compatibility test).")
           PY
 
       - name: Package MTZ prototype
         run: |
           cd theme
           zip -r ../LiquidClock-Redmi12-5G-prototype.mtz .
+
+      - name: Verify MTZ archive structure
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          archive = "LiquidClock-Redmi12-5G-prototype.mtz"
+          with ZipFile(archive) as z:
+              names = set(z.namelist())
+              required = {"description.xml", "lockscreen/advance/manifest.xml"}
+              missing = required - names
+              if missing:
+                  raise SystemExit("MTZ missing entries: " + ", ".join(sorted(missing)))
+              bad = z.testzip()
+              if bad:
+                  raise SystemExit(f"Corrupt ZIP entry: {bad}")
+              print(f"MTZ archive OK: {len(names)} entries")
+          PY
 
       - name: Upload MTZ artifact
         uses: actions/upload-artifact@v4
