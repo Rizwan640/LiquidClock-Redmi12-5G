@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<theme>
+  <version><![CDATA[0.1.0-prototype]]></version>
+  <uiVersion>17</uiVersion>
+  <author><![CDATA[LiquidClock Project]]></author>
+  <designer><![CDATA[LiquidClock Project]]></designer>
+  <title><![CDATA[LiquidClock]]></title>
+  <description><![CDATA[Experimental Liquid Glass inspired lock-screen clock for Redmi 12 5G / HyperOS 2.0 India. Prototype only; device compatibility and notification behavior are not yet verified.]]></description>
+  <authors>
+    <author locale="en_US"><![CDATA[LiquidClock Project]]></author>
+  </authors>
+  <designers>
+    <designer locale="en_US"><![CDATA[LiquidClock Project]]></designer>
+  </designers>
+  <titles>
+    <title locale="en_US"><![CDATA[LiquidClock]]></title>
+  </titles>
+  <descriptions>
+    <description locale="en_US"><![CDATA[Experimental Liquid Glass inspired lock-screen clock for Redmi 12 5G / HyperOS 2.0 India.]]></description>
+  </descriptions>
+  <miuiAdapterVersion>8.2</miuiAdapterVersion>
+</theme>
