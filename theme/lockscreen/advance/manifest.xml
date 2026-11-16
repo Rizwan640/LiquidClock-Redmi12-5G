@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Lockscreen version="1" frameRate="30" useVariableUpdater="DateTime.Minute" screenWidth="1080" useHardwareCanvas="true">
-    <!-- Keep the system wallpaper instead of bundling a replacement image. -->
+    <!-- Use the phone's current system wallpaper. -->
     <Wallpaper />
 
-    <!-- Liquid Glass-inspired panel: translucent fill + highlights.
-         This is a visual approximation, not live wallpaper blur. -->
+    <!-- Liquid Glass-inspired panel: translucent fill and edge highlights.
+         MAML transparency is not live backdrop blur. -->
     <Rectangle x="54" y="420" w="972" h="500"
         cornerRadius="54"
         fillColor="#2bffffff"
@@ -20,7 +20,6 @@
         </FillShaders>
     </Rectangle>
 
-    <!-- Inner glass edge -->
     <Rectangle x="72" y="438" w="936" h="464"
         cornerRadius="42"
         fillColor="#00ffffff"
@@ -38,7 +37,6 @@
         fontFamily="miui-light"
         format="HH:mm" />
 
-    <!-- Top reflection -->
     <Rectangle x="112" y="455" w="260" h="4"
         cornerRadius="2"
         fillColor="#88ffffff" />
@@ -49,13 +47,14 @@
         size="30"
         text="Swipe up to unlock" />
 
-    <!-- Xiaomi MAML slide-up unlock gesture, based on Xiaomi Theme Designer guide. -->
-    <Unlocker name="unlocker" bounceInitSpeed="1500" bounceAcceleration="3000">
-        <StartPoint x="390" y="#screen_height-200" w="300" h="200" />
-        <EndPoint x="390" y="#screen_height-600" w="300" h="100">
-            <Path x="0" y="0" tolerance="800">
-                <Position x="390" y="#screen_height-200" />
-                <Position x="390" y="#screen_height-500" />
+    <!-- Full-screen swipe area following Xiaomi Theme Designer's documented
+         MAML Unlocker geometry. Actual HyperOS behavior still needs testing. -->
+    <Unlocker name="Unlocker">
+        <StartPoint x="0" y="0" w="1080" h="#screen_height" />
+        <EndPoint x="0" y="-#screen_height" w="1080" h="#screen_height-200">
+            <Path tolerance="800">
+                <Position x="0" y="0" />
+                <Position x="0" y="-#screen_height" />
             </Path>
         </EndPoint>
     </Unlocker>
